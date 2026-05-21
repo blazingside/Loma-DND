@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Party Codex — Loma DND</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0807;
+    --ink-2: #100c0a;
+    --panel: #1a1411;
+    --panel-2: #221915;
+    --gold: #c9a14a;
+    --gold-bright: #e6c46a;
+    --gold-dim: #8a6f33;
+    --parchment: #d4c89a;
+    --parchment-dim: #9a8a6a;
+    --blood: #7a1a1a;
+    --bone: #e8dcb0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Noto Serif Thai', 'Cormorant Garamond', serif;
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at top, rgba(201, 161, 74, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(122, 26, 26, 0.05) 0%, transparent 50%);
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.05 0 0 0 0 0.04 0 0 0 0 0.03 0 0 0 0 0.18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.04;
+    background-image:
+      radial-gradient(circle, var(--gold) 1px, transparent 1px),
+      radial-gradient(circle, var(--gold) 1px, transparent 1px);
+    background-size: 60px 60px, 60px 60px;
+    background-position: 0 0, 30px 30px;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  .loading {
+    text-align: center;
+    padding: 100px 20px;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.2em;
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--gold-dim);
+    border-top-color: var(--gold-bright);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg {
+    background: rgba(122, 26, 26, 0.2);
+    border: 1px solid var(--blood);
+    padding: 24px;
+    border-radius: 4px;
+    color: var(--parchment);
+    text-align: center;
+  }
+  .hero { text-align: center; padding: 60px 20px 80px; position: relative; }
+  .hero-ornament {
+    color: var(--gold);
+    font-size: 28px;
+    letter-spacing: 8px;
+    margin-bottom: 24px;
+    opacity: 0.7;
+  }
+  .hero h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 900;
+    font-size: clamp(36px, 6vw, 64px);
+    color: var(--gold-bright);
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    text-shadow: 0 0 30px rgba(201, 161, 74, 0.3), 0 2px 0 rgba(0,0,0,0.8);
+  }
+  .hero h2 {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    font-size: clamp(14px, 2vw, 18px);
+    color: var(--parchment-dim);
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+  .hero-subtitle {
+    font-family: 'Noto Serif Thai', serif;
+    font-style: italic;
+    color: var(--parchment);
+    font-size: 18px;
+    max-width: 580px;
+    margin: 0 auto;
+    opacity: 0.85;
+  }
+  .hero-divider {
+    margin: 40px auto 0;
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    position: relative;
+  }
+  .hero-divider::after {
+    content: '✦';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ink);
+    padding: 0 14px;
+    color: var(--gold);
+    font-size: 14px;
+  }
+  .party-count {
+    margin-top: 20px;
+    font-family: 'Cinzel', serif;
+    color: var(--gold-dim);
+    letter-spacing: 0.3em;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  section { margin: 80px 0; position: relative; }
+  .section-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    font-size: clamp(24px, 4vw, 36px);
+    color: var(--gold-bright);
+    text-align: center;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .section-subtitle {
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    color: var(--parchment-dim);
+    letter-spacing: 0.3em;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 28px 24px;
+    position: relative;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(201, 161, 74, 0.2);
+    pointer-events: none;
+    border-radius: 2px;
+  }
+  .card:hover {
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 30px rgba(201, 161, 74, 0.2);
+    transform: translateY(-4px);
+  }
+  .card.mystery {
+    background: repeating-linear-gradient(45deg, var(--panel) 0px, var(--panel) 8px, var(--panel-2) 8px, var(--panel-2) 16px);
+    border-style: dashed;
+    opacity: 0.85;
+  }
+  .card-rank {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--gold-bright);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  .card-alignment {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    color: var(--parchment);
+    text-transform: uppercase;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(201, 161, 74, 0.2);
+  }
+  .card-alignment .icon { font-size: 16px; margin-right: 6px; }
+  .card-desc {
+    font-family: 'Noto Serif Thai', serif;
+    color: var(--parchment);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .card-classes {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(201, 161, 74, 0.15);
+  }
+  .card-classes-label {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-classes-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .class-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    background: rgba(201, 161, 74, 0.1);
+    color: var(--gold-bright);
+    padding: 4px 10px;
+    border: 1px solid rgba(201, 161, 74, 0.3);
+    border-radius: 2px;
+  }
+  .card-meta {
+    margin-top: 12px;
+    font-size: 11px;
+    font-family: 'Cinzel', serif;
+    color: var(--gold-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .mystery-mark {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 72px;
+    color: var(--gold);
+    text-align: center;
+    line-height: 1;
+    margin: 20px 0;
+    opacity: 0.5;
+  }
+  .mystery-text {
+    text-align: center;
+    color: var(--parchment-dim);
+    font-style: italic;
+    font-size: 14px;
+  }
+  .chart-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--gold-dim);
+    padding: 24px;
+    border-radius: 4px;
+    position: relative;
+  }
+  .chart-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(201, 161, 74, 0.2);
+    pointer-events: none;
+  }
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .chart-cell {
+    background: var(--ink-2);
+    border: 1px solid rgba(201, 161, 74, 0.25);
+    padding: 16px 12px;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .chart-cell.active {
+    border-color: var(--gold-bright);
+    background: linear-gradient(180deg, rgba(201, 161, 74, 0.08), transparent);
+    box-shadow: inset 0 0 20px rgba(201, 161, 74, 0.1);
+  }
+  .chart-cell-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .chart-cell.active .chart-cell-label { color: var(--gold-bright); }
+  .chart-cell-icon { font-size: 20px; margin-bottom: 8px; }
+  .chart-cell-ref {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    color: var(--parchment-dim);
+    font-style: italic;
+    line-height: 1.3;
+  }
+  .chart-cell-members {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+  }
+  .member-token {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  .dynamics-card {
+    background: var(--panel);
+    border: 1px solid var(--gold-dim);
+    padding: 28px;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .dynamics-card::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgba(201, 161, 74, 0.15);
+    pointer-events: none;
+  }
+  .dynamics-card h3 {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold-bright);
+    margin-bottom: 12px;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+  }
+  .dynamics-card p { color: var(--parchment); margin-bottom: 8px; }
+  .dynamics-card strong { color: var(--gold-bright); }
+  .refresh-bar { text-align: center; margin: 30px 0; }
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 10px 24px;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .refresh-btn:hover {
+    background: var(--gold);
+    color: var(--ink);
+    border-color: var(--gold);
+  }
+  .footer {
+    text-align: center;
+    margin-top: 100px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(201, 161, 74, 0.2);
+    color: var(--parchment-dim);
+    font-style: italic;
+  }
+  .footer-ornament {
+    color: var(--gold);
+    font-size: 20px;
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card, .chart-wrapper, .dynamics-card {
+    animation: fadeUp 0.6s ease-out backwards;
+  }
+  @media (max-width: 640px) {
+    .container { padding: 24px 16px 60px; }
+    .hero { padding: 40px 10px 50px; }
+    .chart-cell { min-height: 110px; padding: 10px 6px; }
+    .chart-cell-label { font-size: 9px; letter-spacing: 0.1em; }
+    .chart-cell-icon { font-size: 16px; }
+    .chart-cell-ref { font-size: 10px; }
+    .member-token { font-size: 9px; padding: 2px 5px; }
+    section { margin: 50px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero">
+    <div class="hero-ornament">✦ ⚔ ✦</div>
+    <h2>Loma · DnD · Chronicle</h2>
+    <h1>The Party Codex</h1>
+    <p class="hero-subtitle">
+      บันทึกพันธสัญญาของห้าผจญภัย<br>
+      ผู้รวมตัวด้วยจิตวิญญาณคนละทิศ แต่เดินบนเส้นทางเดียวกัน
+    </p>
+    <div class="hero-divider"></div>
+    <p class="party-count" id="party-count">— Awaiting the Chronicle —</p>
+  </header>
+
+  <div id="content">
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div>กำลังเรียกบันทึกจากหอจดหมายเหตุ...</div>
+    </div>
+  </div>
+
+  <div class="refresh-bar">
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh Chronicle</button>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-ornament">✦ ⚔ ✦</div>
+    <p>บันทึกนี้จะเสร็จสมบูรณ์<br>เมื่อผจญภัยทั้งห้าเปิดเผยจิตวิญญาณของตน</p>
+    <p style="margin-top: 16px; font-size: 13px; opacity: 0.6;">Loma DnD Chronicle · The Party Codex</p>
+  </footer>
+
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbx28hikH19w7DKVC0UGT0xen4Gqu83CfzwcRQ76LjGz-Oikmp6cO6GVo-6iN4apOqQk/exec';
+const PARTY_SIZE = 5;
+
+const ALIGNMENTS = {
+  'Lawful Good':     { icon: '⚔️',  ref: 'Superman, Captain America' },
+  'Neutral Good':    { icon: '🌟', ref: 'Spider-Man, Gandalf' },
+  'Chaotic Good':    { icon: '🔥', ref: 'Robin Hood, Wolverine' },
+  'Lawful Neutral':  { icon: '⚖️', ref: 'Judge Dredd, Stannis' },
+  'True Neutral':    { icon: '☯️', ref: 'Saitama, The Dude' },
+  'Chaotic Neutral': { icon: '🌀', ref: 'Jack Sparrow, Deadpool' },
+  'Lawful Evil':     { icon: '👑', ref: 'Darth Vader, Tywin' },
+  'Neutral Evil':    { icon: '🗡️', ref: 'Voldemort, Sauron' },
+  'Chaotic Evil':    { icon: '💀', ref: 'Joker, Ramsay Bolton' },
+};
+
+const ALIGNMENT_ORDER = [
+  'Lawful Good', 'Neutral Good', 'Chaotic Good',
+  'Lawful Neutral', 'True Neutral', 'Chaotic Neutral',
+  'Lawful Evil', 'Neutral Evil', 'Chaotic Evil'
+];
+
+const ALIGNMENT_DESC = {
+  'Lawful Good': 'ผู้ปกป้องที่ยึดมั่นในความถูกต้องและกฎหมาย ทำดีอย่างมีระเบียบและซื่อสัตย์ต่อหลักการ',
+  'Neutral Good': 'ผู้ทำดีโดยไม่ผูกติดกับกฎหรืออิสรภาพ ขอเพียงได้ช่วยเหลือผู้อื่น ยืดหยุ่นตามสถานการณ์',
+  'Chaotic Good': 'วิญญาณเสรีที่ทำสิ่งดีตามจิตสำนึก ไม่สนใจกฎ หากกฎขัดกับสิ่งที่ถูกต้อง จะหักมันทันที',
+  'Lawful Neutral': 'ผู้ยึดถือกฎเกณฑ์และระเบียบเหนือสิ่งอื่นใด ไม่เอนเอียงดีหรือชั่ว แต่เชื่อมั่นในระบบที่วางไว้',
+  'True Neutral': 'ผู้รักษาสมดุลของจักรวาล ไม่เอียงไปด้านใด ทำตามธรรมชาติและสามัญสำนึก',
+  'Chaotic Neutral': 'ผู้รักอิสรภาพเหนือทุกสิ่ง ไม่ผูกมัดกับกฎหรือศีลธรรม ทำตามใจตน',
+  'Lawful Evil': 'ผู้ใช้กฎเป็นอาวุธ มีระเบียบในความชั่วร้าย ทรงพลังและน่ากลัวเพราะคาดเดาได้',
+  'Neutral Evil': 'ผู้แสวงประโยชน์ตน ไม่ผูกมัดกับใคร หากได้ประโยชน์ พร้อมหักหลังทุกคน',
+  'Chaotic Evil': 'ผู้ทำลายล้างที่ไม่ฟังใคร เกิดขึ้นจากความโกรธและความปรารถนา ไร้ขอบเขต'
+};
+
+const ALIGNMENT_CLASSES = {
+  'Lawful Good':     ['Paladin', 'Cleric', 'Monk', 'Fighter'],
+  'Neutral Good':    ['Cleric', 'Druid', 'Ranger', 'Bard'],
+  'Chaotic Good':    ['Bard', 'Rogue', 'Ranger', 'Sorcerer'],
+  'Lawful Neutral':  ['Monk', 'Wizard', 'Cleric', 'Fighter'],
+  'True Neutral':    ['Druid', 'Wizard', 'Ranger', 'Monk'],
+  'Chaotic Neutral': ['Sorcerer', 'Rogue', 'Barbarian', 'Warlock'],
+  'Lawful Evil':     ['Paladin (Oathbreaker)', 'Cleric', 'Wizard', 'Fighter'],
+  'Neutral Evil':    ['Rogue', 'Warlock', 'Wizard', 'Sorcerer'],
+  'Chaotic Evil':    ['Barbarian', 'Warlock', 'Rogue', 'Sorcerer']
+};
+
+async function loadData() {
+  const content = document.getElementById('content');
+  content.innerHTML = `
+    <div class="loading">
+      <div class="loading-spinner"></div>
+      <div>กำลังเรียกบันทึกจากหอจดหมายเหตุ...</div>
+    </div>
+  `;
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'ไม่สามารถดึงข้อมูลได้');
+    renderCodex(json.data || []);
+  } catch (err) {
+    content.innerHTML = `
+      <div class="error-msg">
+        <strong>⚠ ไม่สามารถเรียกบันทึกได้</strong><br>
+        <span style="font-size: 14px; opacity: 0.8;">${err.message}</span>
+      </div>
+    `;
+  }
+}
+
+function renderCodex(members) {
+  members.sort((a, b) => {
+    const ai = ALIGNMENT_ORDER.indexOf(a.alignment);
+    const bi = ALIGNMENT_ORDER.indexOf(b.alignment);
+    return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  });
+  document.getElementById('party-count').textContent =
+    `— ${members.length} of ${PARTY_SIZE} adventurers chronicled —`;
+  document.getElementById('content').innerHTML =
+    renderCards(members) + renderChart(members) + renderDynamics(members);
+}
+
+function renderCards(members) {
+  const cards = members.map((m, i) => {
+    const a = m.alignment || 'Unknown';
+    const aData = ALIGNMENTS[a] || { icon: '❓', ref: '' };
+    const desc = ALIGNMENT_DESC[a] || 'จิตวิญญาณยังไม่ปรากฏชัด';
+    const classes = ALIGNMENT_CLASSES[a] || [];
+    const skipped = m.alignment_skipped === true || m.alignment_skipped === 'TRUE';
+    return `
+      <div class="card">
+        <div class="card-rank">Member ${toRoman(i + 1)}</div>
+        <div class="card-name">${escapeHtml(m.name)}</div>
+        <div class="card-alignment"><span class="icon">${aData.icon}</span>${a}</div>
+        <div class="card-desc">${desc}</div>
+        ${classes.length ? `
+          <div class="card-classes">
+            <div class="card-classes-label">อาชีพที่เหมาะกับ ${a}</div>
+            <div class="card-classes-list">
+              ${classes.map(c => `<span class="class-tag">${c}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+        <div class="card-meta">${skipped ? '⚜ เลือกเอง' : '◈ ผลจาก Quiz'}</div>
+      </div>
+    `;
+  });
+  const missing = Math.max(0, PARTY_SIZE - members.length);
+  for (let i = 0; i < missing; i++) {
+    cards.push(`
+      <div class="card mystery">
+        <div class="card-rank">Member ${toRoman(members.length + i + 1)}</div>
+        <div class="card-name">???</div>
+        <div class="card-alignment"><span class="icon">❓</span>Unknown Alignment</div>
+        <div class="mystery-mark">?</div>
+        <p class="mystery-text">
+          พันธสัญญายังไม่สมบูรณ์<br>
+          ผจญภัยผู้นี้ยังมิได้เผยตัวตน
+        </p>
+      </div>
+    `);
+  }
+  return `
+    <section>
+      <h2 class="section-title">⚜ สมาชิกแห่งกลุ่ม ⚜</h2>
+      <p class="section-subtitle">— Members of the Fellowship —</p>
+      <div class="cards-grid">${cards.join('')}</div>
+    </section>
+  `;
+}
+
+function renderChart(members) {
+  const byAlign = {};
+  members.forEach(m => {
+    const a = m.alignment;
+    if (!byAlign[a]) byAlign[a] = [];
+    byAlign[a].push(m.name);
+  });
+  const cells = ALIGNMENT_ORDER.map(a => {
+    const data = ALIGNMENTS[a];
+    const inThisCell = byAlign[a] || [];
+    const isActive = inThisCell.length > 0;
+    return `
+      <div class="chart-cell ${isActive ? 'active' : ''}">
+        <div class="chart-cell-icon">${data.icon}</div>
+        <div class="chart-cell-label">${a}</div>
+        <div class="chart-cell-ref">เช่น ${data.ref}</div>
+        ${inThisCell.length ? `
+          <div class="chart-cell-members">
+            ${inThisCell.map(n => `<span class="member-token">${escapeHtml(n)}</span>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  });
+  return `
+    <section>
+      <h2 class="section-title">✦ แผนผังจิตวิญญาณ ✦</h2>
+      <p class="section-subtitle">— The Alignment Chart —</p>
+      <div class="chart-wrapper">
+        <div class="chart-grid">${cells.join('')}</div>
+      </div>
+    </section>
+  `;
+}
+
+function renderDynamics(members) {
+  if (members.length < 2) {
+    return `
+      <section>
+        <h2 class="section-title">⚜ พลวัตแห่งกลุ่ม ⚜</h2>
+        <p class="section-subtitle">— Party Dynamics —</p>
+        <div class="dynamics-card">
+          <p style="text-align: center; font-style: italic; opacity: 0.8;">
+            ต้องการสมาชิกอย่างน้อย 2 คนเพื่อวิเคราะห์พลวัต
+          </p>
+        </div>
+      </section>
+    `;
+  }
+  const axes = analyzeAxes(members);
+  const conflicts = findConflicts(members);
+  const glue = findGlue(members);
+  return `
+    <section>
+      <h2 class="section-title">⚜ พลวัตแห่งกลุ่ม ⚜</h2>
+      <p class="section-subtitle">— Party Dynamics —</p>
+      <div class="dynamics-card">
+        <h3>◈ แกนกลางของกลุ่ม</h3>
+        <p>${axes.summary}</p>
+      </div>
+      ${glue ? `
+        <div class="dynamics-card">
+          <h3>✦ ผู้ประสาน</h3>
+          <p><strong>${glue.names.join(', ')}</strong> (${glue.alignment}) เป็นจุดเชื่อมระหว่างคนที่คิดต่างกัน มักหาทางออกที่ทุกคนรับได้</p>
+        </div>
+      ` : ''}
+      ${conflicts.length ? `
+        <div class="dynamics-card">
+          <h3>⚔ จุดที่อาจปะทะ</h3>
+          ${conflicts.map(c => `<p><strong>${c.a} ⚔ ${c.b}:</strong> ${c.reason}</p>`).join('')}
+        </div>
+      ` : ''}
+    </section>
+  `;
+}
+
+function analyzeAxes(members) {
+  let lawCount = 0, chaosCount = 0, goodCount = 0, evilCount = 0;
+  members.forEach(m => {
+    const a = m.alignment || '';
+    if (a.includes('Lawful')) lawCount++;
+    if (a.includes('Chaotic')) chaosCount++;
+    if (a.includes('Good')) goodCount++;
+    if (a.includes('Evil')) evilCount++;
+  });
+  let summary = '';
+  if (goodCount > 0 && evilCount === 0) {
+    summary = `กลุ่มมีแกนกลางเป็น Good ที่แข็งแรง (${goodCount} จาก ${members.length} คน) — ทุกคนพร้อมช่วยเหลือผู้อื่น`;
+  } else if (evilCount > goodCount) {
+    summary = `กลุ่มเอนเอียงไปทาง Evil — campaign แนวมืดน่าจะเล่นมันส์`;
+  } else if (lawCount > 0 && chaosCount > 0) {
+    summary = `กลุ่มมีทั้ง Lawful (${lawCount}) และ Chaotic (${chaosCount}) — drama เรื่องวิธีการรับประกันได้`;
+  } else {
+    summary = `กลุ่มค่อนข้างกลมกลืน — ${members.length} ผจญภัยที่เดินทางบนแนวคิดใกล้เคียงกัน`;
+  }
+  return { summary };
+}
+
+function findConflicts(members) {
+  const conflicts = [];
+  for (let i = 0; i < members.length; i++) {
+    for (let j = i + 1; j < members.length; j++) {
+      const a = members[i].alignment || '';
+      const b = members[j].alignment || '';
+      if (a.includes('Lawful') && b.includes('Chaotic')) {
+        conflicts.push({
+          a: members[i].name, b: members[j].name,
+          reason: 'ความขัดแย้งคลาสสิก คนหนึ่งยึดกฎ คนหนึ่งหักกฎ ทุกการตัดสินใจจะต้องเถียงกัน'
+        });
+      } else if (a.includes('Good') && b.includes('Evil')) {
+        conflicts.push({
+          a: members[i].name, b: members[j].name,
+          reason: 'แกนศีลธรรมต่างกันสุดขั้ว ความร่วมมือจะตึงเครียด'
+        });
+      }
+    }
+  }
+  return conflicts.slice(0, 3);
+}
+
+function findGlue(members) {
+  const neutrals = members.filter(m => {
+    const a = m.alignment || '';
+    return a === 'Neutral Good' || a === 'True Neutral' || a === 'Neutral Evil';
+  });
+  if (neutrals.length === 0) return null;
+  const byAlign = {};
+  neutrals.forEach(m => {
+    if (!byAlign[m.alignment]) byAlign[m.alignment] = [];
+    byAlign[m.alignment].push(m.name);
+  });
+  let bestAlign = null, bestNames = [];
+  for (const [a, names] of Object.entries(byAlign)) {
+    if (names.length > bestNames.length) {
+      bestAlign = a;
+      bestNames = names;
+    }
+  }
+  return bestAlign ? { alignment: bestAlign, names: bestNames } : null;
+}
+
+function toRoman(num) {
+  const map = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  return map[num] || num;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+loadData();
+</script>
+</body>
+</html>
