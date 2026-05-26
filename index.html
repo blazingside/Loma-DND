@@ -464,7 +464,9 @@
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbx28hikH19w7DKVC0UGT0xen4Gqu83CfzwcRQ76LjGz-Oikmp6cO6GVo-6iN4apOqQk/exec';
+const SHEET_ID = '1SNS85xYls46Edv4Wj5qLJLjRJPIcR-lbT3y8YL2_cTg';
+const SHEET_NAME = 'Loma-DND-Database';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NAME) + '&t=' + Date.now();
 const PARTY_SIZE = 5;
 
 const ALIGNMENTS = {
@@ -509,30 +511,62 @@ const ALIGNMENT_CLASSES = {
   'Chaotic Evil':    ['Barbarian', 'Warlock', 'Rogue', 'Sorcerer']
 };
 
+// ─── CSV PARSER (handles quotes & commas) ───
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cur += '"'; i++; }
+        else { inQuotes = false; }
+      } else { cur += c; }
+    } else {
+      if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(cur); cur = ''; }
+      else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { cur += c; }
+    }
+  }
+  if (cur !== '' || row.length > 0) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function csvToObjects(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1)
+    .filter(function(r) { return r[1]; })  // must have name
+    .map(function(r) {
+      const obj = {};
+      headers.forEach(function(h, i) { obj[h] = r[i] || ''; });
+      return obj;
+    });
+}
+
 function loadData() {
   const content = document.getElementById('content');
   content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>กำลังเรียกบันทึกจากหอจดหมายเหตุ...</div></div>';
   
-  const callbackName = 'codexCallback_' + Date.now();
-  const script = document.createElement('script');
+  const url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NAME) + '&t=' + Date.now();
   
-  window[callbackName] = function(json) {
-    try { delete window[callbackName]; } catch(e) {}
-    if (script.parentNode) script.parentNode.removeChild(script);
-    
-    if (!json || !json.success) {
-      content.innerHTML = '<div class="error-msg"><strong>⚠ ไม่สามารถเรียกบันทึกได้</strong><br><span style="font-size: 14px; opacity: 0.8;">' + ((json && json.error) || 'unknown error') + '</span></div>';
-      return;
-    }
-    renderCodex(json.data || []);
-  };
-  
-  script.src = API_URL + '?callback=' + callbackName;
-  script.onerror = function() {
-    try { delete window[callbackName]; } catch(e) {}
-    content.innerHTML = '<div class="error-msg"><strong>⚠ ไม่สามารถเชื่อมต่อหอจดหมายเหตุ</strong></div>';
-  };
-  document.head.appendChild(script);
+  fetch(url)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    })
+    .then(function(text) {
+      const members = csvToObjects(text);
+      renderCodex(members);
+    })
+    .catch(function(err) {
+      content.innerHTML = '<div class="error-msg"><strong>⚠ ไม่สามารถเรียกบันทึกได้</strong><br><span style="font-size: 14px; opacity: 0.8;">' + err.message + '</span></div>';
+    });
 }
 
 function renderCodex(members) {
@@ -553,7 +587,7 @@ function renderCards(members) {
     const aData = ALIGNMENTS[a] || { icon: '❓', ref: '' };
     const desc = ALIGNMENT_DESC[a] || 'จิตวิญญาณยังไม่ปรากฏชัด';
     const classes = ALIGNMENT_CLASSES[a] || [];
-    const skipped = m.alignment_skipped === true || m.alignment_skipped === 'TRUE';
+    const skipped = m.alignment_skipped === 'TRUE' || m.alignment_skipped === 'true' || m.alignment_skipped === true;
     
     let classesHtml = '';
     if (classes.length) {
