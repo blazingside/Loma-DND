@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Phase 4.1 Test v2 — FormData POST</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1411;
+    color: #d4c89a;
+    padding: 40px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  h1 { color: #e6c46a; }
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    background: #0a0807;
+    color: #d4c89a;
+    border: 1px solid #8a6f33;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  button {
+    background: #c9a14a;
+    color: #0a0807;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 16px;
+    border-radius: 4px;
+  }
+  button:hover { background: #e6c46a; }
+  pre {
+    background: #0a0807;
+    padding: 16px;
+    border: 1px solid #8a6f33;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  .success { border-color: #4ade80; color: #4ade80; }
+  .error { border-color: #b22a2a; color: #ff8888; }
+  .note {
+    background: rgba(201, 161, 74, 0.1);
+    border-left: 3px solid #c9a14a;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<h1>Phase 4.1 Test v2 — FormData</h1>
+<p>ทดสอบส่งข้อมูลด้วย FormData (ผ่าน CORS preflight ได้)</p>
+
+<label>ชื่อ:</label>
+<input type="text" id="name" placeholder="เช่น ทดสอบ-003" value="ทดสอบ-003">
+
+<label>Alignment:</label>
+<select id="alignment">
+  <option>Lawful Good</option>
+  <option>Neutral Good</option>
+  <option>Chaotic Good</option>
+  <option>Lawful Neutral</option>
+  <option selected>True Neutral</option>
+  <option>Chaotic Neutral</option>
+  <option>Lawful Evil</option>
+  <option>Neutral Evil</option>
+  <option>Chaotic Evil</option>
+</select>
+
+<button onclick="sendData()">ส่งข้อมูลเข้า Sheet</button>
+
+<div class="note">
+  💡 หลังกดส่ง ให้รอประมาณ 2-3 วินาที แล้วเปิด Google Sheet ดูว่ามีแถวใหม่ขึ้นไหม
+</div>
+
+<pre id="result">รอผลลัพธ์...</pre>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbx28hikH19w7DKVC0UGT0xen4Gqu83CfzwcRQ76LjGz-Oikmp6cO6GVo-6iN4apOqQk/exec';
+
+async function sendData() {
+  const result = document.getElementById('result');
+  result.className = '';
+  result.textContent = 'กำลังส่ง...';
+  
+  const payload = {
+    name: document.getElementById('name').value,
+    alignment: document.getElementById('alignment').value,
+    alignment_skipped: true,
+    notes: 'phase 4.1 test v2 — FormData'
+  };
+  
+  // ใช้ FormData แทน JSON (Apps Script รับเป็น URL parameter)
+  const formData = new FormData();
+  formData.append('payload', JSON.stringify(payload));
+  
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: formData
+      // ไม่ต้องตั้ง Content-Type, browser จะทำให้
+      // ไม่ต้อง mode: 'no-cors' เพราะ Apps Script ตอบ CORS ให้ FormData ได้
+    });
+    
+    const text = await res.text();
+    let response;
+    try {
+      response = JSON.parse(text);
+    } catch (e) {
+      response = { raw: text };
+    }
+    
+    if (response.success) {
+      result.className = 'success';
+      result.textContent = '✓ บันทึกสำเร็จ!\n\nresponse:\n' + JSON.stringify(response, null, 2) + '\n\nไปเช็คใน Google Sheet ดู "' + payload.name + '"';
+    } else {
+      result.className = 'error';
+      result.textContent = '✗ ส่งได้แต่ Apps Script error\n\nresponse:\n' + JSON.stringify(response, null, 2);
+    }
+  } catch (err) {
+    result.className = 'error';
+    result.textContent = '✗ ส่งไม่สำเร็จ\n' + err.message + '\n\nลองวิธี no-cors แทน:';
+    
+    // fallback: ลอง no-cors
+    try {
+      await fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+      });
+      result.textContent += '\n✓ ส่งแบบ no-cors แล้ว — ไปเช็ค Sheet';
+    } catch (err2) {
+      result.textContent += '\n✗ no-cors ก็ไม่ได้: ' + err2.message;
+    }
+  }
+}
+</script>
+</body>
+</html>
