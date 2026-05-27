@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Phase 4.1 Test — POST to Apps Script</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1411;
+    color: #d4c89a;
+    padding: 40px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  h1 { color: #e6c46a; }
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    background: #0a0807;
+    color: #d4c89a;
+    border: 1px solid #8a6f33;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  button {
+    background: #c9a14a;
+    color: #0a0807;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 16px;
+    border-radius: 4px;
+  }
+  button:hover { background: #e6c46a; }
+  pre {
+    background: #0a0807;
+    padding: 16px;
+    border: 1px solid #8a6f33;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  .success { border-color: #4ade80; color: #4ade80; }
+  .error { border-color: #b22a2a; color: #ff8888; }
+</style>
+</head>
+<body>
+<h1>Phase 4.1 — Test POST</h1>
+<p>ทดสอบส่งข้อมูลเข้า Google Sheet ผ่าน Apps Script</p>
+
+<label>ชื่อ:</label>
+<input type="text" id="name" placeholder="เช่น ทดสอบ-001" value="ทดสอบ-001">
+
+<label>Alignment:</label>
+<select id="alignment">
+  <option>Lawful Good</option>
+  <option>Neutral Good</option>
+  <option>Chaotic Good</option>
+  <option>Lawful Neutral</option>
+  <option selected>True Neutral</option>
+  <option>Chaotic Neutral</option>
+  <option>Lawful Evil</option>
+  <option>Neutral Evil</option>
+  <option>Chaotic Evil</option>
+</select>
+
+<button onclick="sendData()">ส่งข้อมูลเข้า Sheet</button>
+
+<pre id="result">รอผลลัพธ์...</pre>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbx28hikH19w7DKVC0UGT0xen4Gqu83CfzwcRQ76LjGz-Oikmp6cO6GVo-6iN4apOqQk/exec';
+
+async function sendData() {
+  const result = document.getElementById('result');
+  result.className = '';
+  result.textContent = 'กำลังส่ง...';
+  
+  const payload = {
+    name: document.getElementById('name').value,
+    alignment: document.getElementById('alignment').value,
+    alignment_skipped: true,
+    notes: 'phase 4.1 test'
+  };
+  
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    
+    // ด้วย mode: 'no-cors' เราจะอ่าน response ไม่ได้
+    // แต่ถ้าไม่ throw error = ส่งถึงแล้ว
+    result.className = 'success';
+    result.textContent = '✓ ส่งข้อมูลแล้ว (no-cors mode)\n\npayload:\n' + JSON.stringify(payload, null, 2) + '\n\nไปเช็คใน Google Sheet ดูว่ามี "' + payload.name + '" โผล่ขึ้นมาไหม';
+  } catch (err) {
+    result.className = 'error';
+    result.textContent = '✗ ส่งไม่สำเร็จ\n' + err.message;
+  }
+}
+</script>
+</body>
+</html>
